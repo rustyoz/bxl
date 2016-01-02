@@ -36,7 +36,7 @@ func main() {
 	wd, _ := os.Getwd()
 	fmt.Println(wd)
 	if len(os.Args) < 2 {
-		fmt.Println("Usage: bxl filename.bxl or bxl *.bxl ")
+		fmt.Println("Usage: bxl filename.bxl or bxl *.bxl \n Currently only output raw ascii as text files")
 		return
 	}
 	if strings.HasPrefix(os.Args[1], "*.") {
