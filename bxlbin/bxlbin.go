@@ -175,7 +175,11 @@ func (d *Decoder) Decode(input io.Reader) (string, error) {
 
 	d.source_index = 4
 	fmt.Println("input bytes: ", len(d.source_buffer))
-	for d.source_index < len(d.source_buffer) {
+
+	var outchar int
+	outchar = uncompressed_size(d.source_buffer[0:4])
+	fmt.Println("Expected Characters", outchar)
+	for outchar != 0 {
 		var bits int
 		var node = d.root
 		for !node.isLeaf() {
@@ -192,6 +196,52 @@ func (d *Decoder) Decode(input io.Reader) (string, error) {
 		output.WriteByte(byte(node.symbol))
 		node.weight = node.weight + 1
 		updateTree(node)
+		outchar = outchar - 1
 	}
 	return output.String(), nil
+}
+
+func uncompressed_size(b []byte) int {
+	/* Uncompressed size =
+	B0b7 * 1<<0 + B0b6 * 1<<1 + ... + B0b0 * 1<<7 +
+	B1b7 * 1<<0 + B1b6 * 1<<1 + ... + B2b0 * 1<<7 +
+	B2b7 * 1<<0 + B2b6 * 1<<1 + ... + B3b0 * 1<<7 +
+	B3b7 * 1<<0 + B3b6 * 1<<1 + ... + B4b0 * 1<<7
+	*/
+	var size int
+	var mask uint
+	var i int
+	i = 7
+	for i >= 0 {
+		if b[0]&(1<<uint(i)) != 0 {
+			size |= (1 << uint(mask))
+		}
+		mask = mask + 1
+		i = i - 1
+	}
+	i = 7
+	for i >= 0 {
+		if b[1]&(1<<uint(i)) != 0 {
+			size |= (1 << uint(mask))
+		}
+		mask = mask + 1
+		i = i - 1
+	}
+	i = 7
+	for i >= 0 {
+		if b[2]&(1<<uint(i)) != 0 {
+			size |= (1 << uint(mask))
+		}
+		mask = mask + 1
+		i = i - 1
+	}
+	i = 7
+	for i >= 0 {
+		if b[3]&(1<<uint(i)) != 0 {
+			size |= (1 << uint(mask))
+		}
+		mask = mask + 1
+		i = i - 1
+	}
+	return size
 }
