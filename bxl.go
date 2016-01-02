@@ -4,36 +4,59 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/rustyoz/bxl/bxlbin"
 	"github.com/rustyoz/bxl/bxlparser"
 )
 
-func main() {
-
-	infile, err := os.Open(os.Args[1])
+func DecodeFile(path string) (string, error) {
+	infile, err := os.Open(path)
 	if err != nil {
-		log.Fatal("Error opening file: ", os.Args[1], err)
+		log.Fatal("Error opening file: ", path, err)
 	}
-
-	os.Create(os.Args[1] + ".txt")
-	outfile, err := os.OpenFile(os.Args[1]+".txt", os.O_CREATE|os.O_WRONLY, 0666)
-	if err != nil {
-		log.Fatal("Error opening file: ", os.Args[1]+".txt", err)
-	}
+	os.Create(path + ".txt")
 
 	decoder := bxlbin.NewDecoder()
-	output, err := decoder.Decode(infile)
+	output, decodeerr := decoder.Decode(infile)
+	var outfile *os.File
+	outfile, err = os.Create(path + ".txt")
+	_, err = outfile.WriteString(output)
 
-	var characters int
-	characters, err = outfile.WriteString(output)
-	fmt.Println("Characters: ", characters)
 	if err != nil {
-		fmt.Println(err)
+		log.Println("Error writing file: ", path+".txt", err)
 	}
+	fmt.Println("Output characters: ", len(output))
 	outfile.Close()
+	return output, decodeerr
+}
 
-	parser := bxlparser.NewBxlParser()
-	parser.Parse(output)
+func main() {
+	wd, _ := os.Getwd()
+	fmt.Println(wd)
+	if len(os.Args) < 2 {
+		fmt.Println("Usage: bxl filename.bxl or bxl *.bxl ")
+		return
+	}
+	if strings.HasPrefix(os.Args[1], "*.") {
+		files, _ := filepath.Glob(os.Args[1])
+		for _, f := range files {
+			fmt.Println(f)
+			path := filepath.Join(wd, f)
+			output, err := DecodeFile(path)
+			if err != nil {
+				parser := bxlparser.NewBxlParser()
+				parser.Parse(output)
+			}
+		}
+
+	} else {
+		output, err := DecodeFile(os.Args[1])
+		if err != nil {
+			parser := bxlparser.NewBxlParser()
+			parser.Parse(output)
+		}
+	}
 
 }
