@@ -46,17 +46,19 @@ func main() {
 			path := filepath.Join(wd, f)
 			output, err := DecodeFile(path)
 			if err != nil {
-				parser := bxlparser.NewBxlParser()
-				parser.Parse(output)
+				log.Fatal(err)
 			}
+			parser := bxlparser.NewBxlParser()
+			parser.Parse(output)
 		}
 
 	} else {
 		output, err := DecodeFile(os.Args[1])
 		if err != nil {
-			parser := bxlparser.NewBxlParser()
-			parser.Parse(output)
+			log.Fatalln(err)
 		}
+		parser := bxlparser.NewBxlParser()
+		parser.Parse(output)
 	}
 
 }

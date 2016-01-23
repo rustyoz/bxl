@@ -1,0 +1,108 @@
+package bxlparser
+
+type XlrLayer int
+
+const (
+	TOP_ASSEMBLY XlrLayer = iota
+	TOP_SILKSCREEN
+	TOP_SOLDER_PASTE
+	TOP_SOLDER_MASK
+	TOP
+	INNER
+	BOTTOM
+	BOTTOM_SOLDER_MASK
+	BOTTOM_SOLDER_PASTE
+	BOTTOM_SILKSCREEN
+	BOTTOM_ASSEMBLY
+	TOP_PLACE_BOUND
+	BOTTOM_PLACE_BOUND
+	INTERNAL1
+	INTERNAL2
+	INTERNAL3
+	INTERNAL4
+	INTERNAL5
+	INTERNAL6
+	INTERNAL7
+	INTERNAL8
+	INTERNAL9
+	INTERNAL10
+	INTERNAL11
+	INTERNAL12
+	INTERNAL13
+	INTERNAL14
+	INTERNAL15
+	INTERNAL16
+	USER1
+	USER2
+	USER3
+	USER4
+	USER5
+	USER6
+	USER7
+	USER8
+	USER9
+	USER10
+	L3D_DXF
+	PIN1MARKER
+	PINTEST
+	TOP_BGA_PLACE_BOARD
+	ATTRIBUTE4
+	ATTRIBUTE3
+	ATTRIBUTE2
+	ATTRIBUTE1
+	PIN_NUMBER
+	CONSTRAINT_AREA
+	CONTACT_AREA
+	INPUTDIMENSIONS
+	ROUTE_KEEPOUT
+	VIA_KEEPOUT
+	DRILL_FIGURE
+	TOP_COMP_BOUND
+	BOTTOM_COMP_BOUND
+	TOP_NOPROBE
+	BOTTOM_NOPROBE
+	PRO_E
+	PIN_DETAIL
+	DIMENSION
+	BOARD
+)
+
+var layermap = map[string]string{
+	"TOP_ASSEMBLY":        "F_Fab",
+	"TOP_SILKSCREEN":      "F_SilkS",
+	"TOP_SOLDER_PASTE":    "F_Paste",
+	"TOP_SOLDER_MASK":     "F_Mask",
+	"TOP":                 "F_Cu",
+	"INNER":               "In1_Cu",
+	"BOTTOM":              "B_Cu",
+	"BOTTOM_SOLDER_MASK":  "B_Mask",
+	"BOTTOM_SOLDER_PASTE": "B_Paste",
+	"BOTTOM_SILKSCREEN":   "B_SilkS",
+	"BOTTOM_ASSEMBLY":     "B_Fab",
+	"TOP_PLACE_BOUND":     "F_CrtYd",
+	"BOTTOM_PLACE_BOUND":  "B_CrtYd",
+	"INTERNAL1":           "In1_Cu",
+	"INTERNAL2":           "In2_Cu",
+	"INTERNAL3":           "In3_Cu",
+	"INTERNAL4":           "In4_Cu",
+	"INTERNAL5":           "In5_Cu",
+	"INTERNAL6":           "In6_Cu",
+	"INTERNAL7":           "In7_Cu",
+	"INTERNAL8":           "In8_Cu",
+	"INTERNAL9":           "In9_Cu",
+	"INTERNAL10":          "In10_Cu",
+	"INTERNAL11":          "In11_Cu",
+	"INTERNAL12":          "In12_Cu",
+	"INTERNAL13":          "In13_Cu",
+	"INTERNAL14":          "In14_Cu",
+	"INTERNAL15":          "In15_Cu",
+	"INTERNAL16":          "In16_Cu",
+	"USER1":               "Eco1_User",
+	"USER2":               "Eco2_User",
+	"DIMENSION":           "Cmts_User",
+	"BOARD":               "Edge_Cuts",
+}
+
+func (l Layer) ToKicadLayer() string {
+	return layermap[l.Name]
+}
