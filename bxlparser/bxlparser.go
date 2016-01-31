@@ -1,16 +1,12 @@
 package bxlparser
 
-import (
-	"strings"
-
-	"github.com/rustyoz/gokicadlib"
-)
+import "strings"
 
 type BxlParser struct {
 	input      string
 	rawlines   []string
 	textStyles []TextStyle
-	patterns   []Pattern
+	Patterns   []Pattern
 	padstacks  []PadStack
 	symbol     Symbol
 	component  Component
@@ -42,10 +38,4 @@ func DoubleQuoteContents(s string) string {
 
 	}
 	return ""
-}
-
-func (p *Pattern) ToKicad() gokicadlib.Module {
-	var m gokicadlib.Module
-
-	return m
 }

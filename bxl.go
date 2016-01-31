@@ -59,6 +59,15 @@ func main() {
 		}
 		parser := bxlparser.NewBxlParser()
 		parser.Parse(output)
+		for _, p := range parser.Patterns {
+			m := p.ToKicad()
+			var module_file *os.File
+			module_file, err = os.Create(strings.Replace(m.Name, " ", "_", -1) + ".kicad_mod")
+			_, err = module_file.WriteString(m.ToSExp())
+			module_file.Close()
+
+		}
+
 	}
 
 }

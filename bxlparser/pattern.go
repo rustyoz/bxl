@@ -1,9 +1,12 @@
 package bxlparser
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/rustyoz/gokicadlib"
 )
 
 // Pattern is the bxl name for a footprint
@@ -39,7 +42,7 @@ func (b *BxlParser) FindPatterns() {
 					FindArcs(&p)
 					FindText(&p)
 					FindPolygon(&p)
-					b.patterns = append(b.patterns, p)
+					b.Patterns = append(b.Patterns, p)
 					return
 					break
 				}
@@ -78,19 +81,19 @@ func (p *Pattern) FindPads() {
 		if strings.HasPrefix(strings.TrimSpace(l), "Pad") {
 			var pad Pad
 			fields := strings.FieldsFunc(l, f)
-
+			fmt.Println(fields)
 			for j, f := range fields {
 				switch f {
 				case "PinName":
-					pad.PinName = DoubleQuoteContents(fields[j+1])
+					pad.PinName = fields[j+1]
 				case "Number":
 					pad.Number, _ = strconv.Atoi(fields[j+1])
 				case "OriginalNumber":
 					pad.OriginalNumber, _ = strconv.Atoi(fields[j+1])
 				case "PadStyle":
-					pad.Style = DoubleQuoteContents(fields[j+1])
+					pad.Style = fields[j+1]
 				case "OriginalPadStyle":
-					pad.OriginalStyle = DoubleQuoteContents(fields[j+1])
+					pad.OriginalStyle = fields[j+1]
 				case "OriginalPinNumber":
 					pad.OriginalNumber, _ = strconv.Atoi(fields[j+1])
 				case "Origin":
@@ -100,4 +103,13 @@ func (p *Pattern) FindPads() {
 			p.Pads = append(p.Pads, pad)
 		}
 	}
+}
+
+func (p *Pattern) ToKicad() gokicadlib.Module {
+	var m gokicadlib.Module
+	m.Name = p.Name
+	m.Reference.Text = m.Name
+	m.Pads = PadSlice(p.Pads).ToKicadPads()
+
+	return m
 }
