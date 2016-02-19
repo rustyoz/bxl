@@ -29,7 +29,7 @@ func (b *BxlParser) FindWizards(hw HasWizards) {
 			for j, f := range fields {
 				switch f {
 				case "Origin":
-					w.Origin = Point{fields[j+1], fields[j+2]}
+					w.Origin.FromString(fields[j+1], fields[j+2])
 				case "VarName":
 					w.VarName = fields[j+1]
 				case "VarData":

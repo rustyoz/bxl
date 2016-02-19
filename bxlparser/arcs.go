@@ -23,9 +23,9 @@ func FindArcs(harcs HasArcs) {
 			for j, f := range fields {
 				switch f {
 				case "Layer":
-					arc.Layer = Layer{fields[j+1]}
+					arc.Layer, _ = XlrLayerString(fields[j+1])
 				case "Origin":
-					arc.Origin = Point{fields[j+1], fields[j+2]}
+					arc.Origin.FromString(fields[j+1], fields[j+2])
 				case "StartAngle":
 					arc.StartAngle, _ = strconv.ParseFloat(fields[j+2], 64)
 				case "Radius":

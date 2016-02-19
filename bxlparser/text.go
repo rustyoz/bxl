@@ -1,14 +1,18 @@
 package bxlparser
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/rustyoz/gokicadlib"
 )
 
 // Text
 type Text struct {
+	owner         HasText
 	Text          string
-	Layer         Layer
+	Layer         XlrLayer
 	Origin        Point
 	Visible       bool
 	Justification string
@@ -20,25 +24,42 @@ type Text struct {
 type HasText interface {
 	AddText(t Text)
 	Data() *[]string
+	TextStyles() TextStyleSlice
 }
 
+type TextSlice []Text
+
 func FindText(ht HasText) {
+	quoted := false
 	f := func(c rune) bool {
-		return c != '(' || c != ')'
+		if quoted && c == '"' {
+			quoted = false
+			return true
+		}
+		if quoted && c != '"' {
+			return false
+		}
+		if !quoted && c == '"' {
+			quoted = true
+			return true
+		}
+
+		return strings.Contains(" (),", string(c))
 	}
 
 	for _, l := range *ht.Data() {
 		if strings.HasPrefix(strings.TrimSpace(l), "Text") {
 			var text Text
 			fields := strings.FieldsFunc(l, f)
+
 			for j, f := range fields {
 				switch f {
 				case "Layer":
-					text.Layer = Layer{fields[j+1]}
+					text.Layer, _ = XlrLayerString(fields[j+1])
 				case "Origin":
-					text.Origin = Point{fields[j+1], fields[j+2]}
+					text.Origin.FromString(fields[j+1], fields[j+2])
 				case "Text":
-					text.Text = DoubleQuoteContents(fields[j+1])
+					text.Text = fields[j+1]
 				case "IsVisible":
 					text.Visible, _ = strconv.ParseBool(fields[j+1])
 				case "Justify":
@@ -47,7 +68,39 @@ func FindText(ht HasText) {
 					text.Style = fields[j+1]
 				}
 			}
+
 			ht.AddText(text)
 		}
 	}
+}
+
+func (t Text) ToKicadText() (kct gokicadlib.Text) {
+	kct.Text = t.Text
+	kct.Layer = t.Layer.ToKicadLayer()
+	kct.Visible = true
+
+	kct.Origin.X = MiltoMM(t.Origin.X)
+	kct.Origin.Y = MiltoMM(t.Origin.Y)
+	var height, charwidth float64
+	ts, err := t.owner.TextStyles().Contains(t.Style)
+	if err != nil {
+		fmt.Println(err)
+	}
+	height = MiltoMM(float64(ts.fontHeight))
+	charwidth = MiltoMM(float64(ts.fontCharWidth))
+	kct.Font.Size.X = height
+	fmt.Print(ts.fontCharWidth)
+	fmt.Println(charwidth)
+	kct.Font.Size.Y = charwidth
+	kct.Font.Thickness = float32(MiltoMM(float64(ts.fontWidth)))
+
+	return kct
+}
+
+func (ts TextSlice) ToKicadText() []gokicadlib.Text {
+	var kcts []gokicadlib.Text
+	for _, t := range ts {
+		kcts = append(kcts, t.ToKicadText())
+	}
+	return kcts
 }

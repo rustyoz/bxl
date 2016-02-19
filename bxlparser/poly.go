@@ -8,7 +8,7 @@ import (
 )
 
 type Polygon struct {
-	Layer  Layer
+	Layer  XlrLayer
 	Origin Point
 	End    Point
 	Points []Point
@@ -22,21 +22,21 @@ type HasPolygon interface {
 
 func FindPolygon(hp HasPolygon) {
 	f := func(c rune) bool {
-		return !unicode.IsLetter(c) && !unicode.IsNumber(c) && c != '-' && c != '.'
+		return !unicode.IsLetter(c) && !unicode.IsNumber(c) && c != '-' && c != '.' && c != '_'
 	}
 
 	for _, l := range *hp.Data() {
 		if strings.HasPrefix(strings.TrimSpace(l), "Poly") {
 			var poly Polygon
-			fields := strings.FieldsFunc(l, f)
+			fields := strings.FieldsFunc(l, SplitFields)
 			for j, f := range fields {
 				switch f {
 				case "Layer":
-					poly.Layer = Layer{fields[j+1]}
+					poly.Layer, _ = XlrLayerString(fields[j+1])
 				case "Origin":
-					poly.Origin = Point{fields[j+1], fields[j+2]}
+					poly.Origin.FromString(fields[j+1], fields[j+2])
 				case "EndPoint":
-					poly.End = Point{fields[j+1], fields[j+2]}
+					poly.End.FromString(fields[j+1], fields[j+2])
 				case "Width":
 					poly.Width = fields[j+1]
 
@@ -45,7 +45,9 @@ func FindPolygon(hp HasPolygon) {
 			tuples := FindTuples(l)
 			for _, tup := range tuples {
 				cords := strings.FieldsFunc(tup, f)
-				poly.Points = append(poly.Points, Point{cords[0], cords[1]})
+				var p Point
+				p.FromString(cords[0], cords[1])
+				poly.Points = append(poly.Points, p)
 			}
 			hp.AddPolygon(poly)
 		}

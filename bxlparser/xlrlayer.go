@@ -1,5 +1,11 @@
 package bxlparser
 
+import (
+	"fmt"
+
+	"github.com/rustyoz/gokicadlib"
+)
+
 type XlrLayer int
 
 const (
@@ -64,45 +70,57 @@ const (
 	PRO_E
 	PIN_DETAIL
 	DIMENSION
+	PAD_DIMENSIONS
 	BOARD
 )
 
-var layermap = map[string]string{
-	"TOP_ASSEMBLY":        "F_Fab",
-	"TOP_SILKSCREEN":      "F_SilkS",
-	"TOP_SOLDER_PASTE":    "F_Paste",
-	"TOP_SOLDER_MASK":     "F_Mask",
-	"TOP":                 "F_Cu",
-	"INNER":               "In1_Cu",
-	"BOTTOM":              "B_Cu",
-	"BOTTOM_SOLDER_MASK":  "B_Mask",
-	"BOTTOM_SOLDER_PASTE": "B_Paste",
-	"BOTTOM_SILKSCREEN":   "B_SilkS",
-	"BOTTOM_ASSEMBLY":     "B_Fab",
-	"TOP_PLACE_BOUND":     "F_CrtYd",
-	"BOTTOM_PLACE_BOUND":  "B_CrtYd",
-	"INTERNAL1":           "In1_Cu",
-	"INTERNAL2":           "In2_Cu",
-	"INTERNAL3":           "In3_Cu",
-	"INTERNAL4":           "In4_Cu",
-	"INTERNAL5":           "In5_Cu",
-	"INTERNAL6":           "In6_Cu",
-	"INTERNAL7":           "In7_Cu",
-	"INTERNAL8":           "In8_Cu",
-	"INTERNAL9":           "In9_Cu",
-	"INTERNAL10":          "In10_Cu",
-	"INTERNAL11":          "In11_Cu",
-	"INTERNAL12":          "In12_Cu",
-	"INTERNAL13":          "In13_Cu",
-	"INTERNAL14":          "In14_Cu",
-	"INTERNAL15":          "In15_Cu",
-	"INTERNAL16":          "In16_Cu",
-	"USER1":               "Eco1_User",
-	"USER2":               "Eco2_User",
-	"DIMENSION":           "Cmts_User",
-	"BOARD":               "Edge_Cuts",
+var layermap = map[string]gokicadlib.Layer{
+	"TOP_ASSEMBLY":        "F.Fab",
+	"TOP_SILKSCREEN":      "F.SilkS",
+	"TOP_SOLDER_PASTE":    "F.Paste",
+	"TOP_SOLDER_MASK":     "F.Mask",
+	"TOP":                 "F.Cu",
+	"INNER":               "In1.Cu",
+	"BOTTOM":              "B.Cu",
+	"BOTTOM_SOLDER_MASK":  "B.Mask",
+	"BOTTOM_SOLDER_PASTE": "B.Paste",
+	"BOTTOM_SILKSCREEN":   "B.SilkS",
+	"BOTTOM_ASSEMBLY":     "B.Fab",
+	"TOP_PLACE_BOUND":     "F.CrtYd",
+	"BOTTOM_PLACE_BOUND":  "B.CrtYd",
+	"INTERNAL1":           "In1.Cu",
+	"INTERNAL2":           "In2.Cu",
+	"INTERNAL3":           "In3.Cu",
+	"INTERNAL4":           "In4.Cu",
+	"INTERNAL5":           "In5.Cu",
+	"INTERNAL6":           "In6.Cu",
+	"INTERNAL7":           "In7.Cu",
+	"INTERNAL8":           "In8.Cu",
+	"INTERNAL9":           "In9.Cu",
+	"INTERNAL10":          "In10.Cu",
+	"INTERNAL11":          "In11.Cu",
+	"INTERNAL12":          "In12.Cu",
+	"INTERNAL13":          "In13.Cu",
+	"INTERNAL14":          "In14.Cu",
+	"INTERNAL15":          "In15.Cu",
+	"INTERNAL16":          "In16.Cu",
+	"USER1":               "Eco1.User",
+	"USER2":               "Eco2.User",
+	"DIMENSION":           "Cmts.User",
+	"PAD_DIMENSIONS":      "Cmts.User",
+	"PRO_E":               "Cmts.User",
+	"BOARD":               "Edge.Cuts",
+	"INPUTDIMENSIONS":     "Cmts.User",
+	"PIN_DETAIL":          "Cmts.User",
 }
 
-func (l Layer) ToKicadLayer() string {
-	return layermap[l.Name]
+func (l XlrLayer) ToKicadLayer() gokicadlib.Layer {
+
+	kcl, err := layermap[l.String()]
+	if err != true {
+		fmt.Println(l.String())
+		fmt.Println(err)
+	}
+	//fmt.Println(l.String(), string(kcl))
+	return kcl
 }

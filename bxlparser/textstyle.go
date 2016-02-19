@@ -1,6 +1,7 @@
 package bxlparser
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 	"unicode"
@@ -14,6 +15,8 @@ type TextStyle struct {
 	fontCharWidth int
 }
 
+type TextStyleSlice []TextStyle
+
 func (b *BxlParser) FindTextStyles() {
 	f := func(c rune) bool {
 		return !unicode.IsLetter(c) && !unicode.IsNumber(c)
@@ -23,7 +26,7 @@ func (b *BxlParser) FindTextStyles() {
 		if strings.HasPrefix(strings.TrimSpace(l), "TextStyle") {
 			var ts TextStyle
 			ts.feilds = strings.FieldsFunc(l, f)
-			ts.style = ts.feilds[1]
+			ts.style = strings.ToLower(ts.feilds[1])
 			for j, f := range ts.feilds {
 				switch f {
 				case "FontWidth":
@@ -34,8 +37,21 @@ func (b *BxlParser) FindTextStyles() {
 					ts.fontCharWidth, _ = strconv.Atoi(ts.feilds[j+1])
 				}
 			}
+			if ts.fontCharWidth == 0 {
+				ts.fontCharWidth = ts.fontHeight
+			}
 			b.textStyles = append(b.textStyles, ts)
 
 		}
 	}
+}
+
+func (tss TextStyleSlice) Contains(s string) (ts TextStyle, err error) {
+	for _, ss := range []TextStyle(tss) {
+		if ss.style == strings.ToLower(s) {
+			return ss, nil
+		}
+	}
+	err = fmt.Errorf("TextStyle %s not found", s)
+	return TextStyle{}, err
 }

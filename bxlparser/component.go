@@ -7,6 +7,7 @@ import (
 
 // Component BXL Component
 type Component struct {
+	owner           *BxlParser
 	data            []string
 	Name            string
 	PatternName     string
@@ -40,6 +41,7 @@ func (b *BxlParser) FindComponents() {
 					c.data = b.rawlines[i+1 : j]
 					c.FindCompPins()
 					i = j
+					b.component = c
 					break
 				}
 				j = j + 1
