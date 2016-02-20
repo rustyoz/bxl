@@ -48,10 +48,10 @@ func (l Line) ToKicadLine() gokicadlib.Line {
 	var kcl gokicadlib.Line
 
 	kcl.Origin.X = MiltoMM(l.Origin.X)
-	kcl.Origin.Y = MiltoMM(l.Origin.Y)
+	kcl.Origin.Y = MiltoMM(-l.Origin.Y)
 
 	kcl.End.X = MiltoMM(l.End.X)
-	kcl.End.Y = MiltoMM(l.End.Y)
+	kcl.End.Y = MiltoMM(-l.End.Y)
 	kcl.Layer = l.Layer.ToKicadLayer()
 	kcl.Width = MiltoMM(l.Width)
 	return kcl

@@ -127,6 +127,7 @@ func (p *Pattern) ToKicad() gokicadlib.Module {
 	m.Tags = []string{p.Name}
 	m.Pads = PadSlice(p.Pads).ToKicadPads()
 	m.Lines = LineSlice(p.Lines).ToKicadLines()
+	m.Arcs = ArcSlice(p.Arcs).ToKicadArcs()
 	m.Text = TextSlice(p.Texts).ToKicadText()
 	m.Tstamp.Stamp()
 

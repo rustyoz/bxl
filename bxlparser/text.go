@@ -80,7 +80,7 @@ func (t Text) ToKicadText() (kct gokicadlib.Text) {
 	kct.Visible = true
 
 	kct.Origin.X = MiltoMM(t.Origin.X)
-	kct.Origin.Y = MiltoMM(t.Origin.Y)
+	kct.Origin.Y = MiltoMM(-t.Origin.Y)
 	var height, charwidth float64
 	ts, err := t.owner.TextStyles().Contains(t.Style)
 	if err != nil {
@@ -89,8 +89,6 @@ func (t Text) ToKicadText() (kct gokicadlib.Text) {
 	height = MiltoMM(float64(ts.fontHeight))
 	charwidth = MiltoMM(float64(ts.fontCharWidth))
 	kct.Font.Size.X = height
-	fmt.Print(ts.fontCharWidth)
-	fmt.Println(charwidth)
 	kct.Font.Size.Y = charwidth
 	kct.Font.Thickness = float32(MiltoMM(float64(ts.fontWidth)))
 

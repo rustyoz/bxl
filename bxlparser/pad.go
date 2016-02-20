@@ -24,7 +24,7 @@ func (p *Pad) ToKicadPad() gokicadlib.Pad {
 	kkp.PinName = p.PinName
 
 	kkp.Origin.X = MiltoMM(p.Origin.X)
-	kkp.Origin.Y = MiltoMM(p.Origin.Y)
+	kkp.Origin.Y = MiltoMM(-p.Origin.Y)
 	styleelements := StyleToElements(p.Style)
 	for i, e := range styleelements {
 		switch e {
