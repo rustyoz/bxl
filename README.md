@@ -1,4 +1,4 @@
-# bxl
+# bxl [![Build Status](https://travis-ci.org/rustyoz/bxl.svg?branch=master)](https://travis-ci.org/rustyoz/bxl)
 ### Description
 Converts bxl EDA Cad files into the kicad footprint and symbol format
 
