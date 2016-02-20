@@ -44,38 +44,28 @@ func main() {
 		for _, f := range files {
 			fmt.Println(f)
 			path := filepath.Join(wd, f)
-			output, err := DecodeFile(path)
-			if err != nil {
-				log.Fatal(err)
-			}
-			parser := bxlparser.NewBxlParser()
-			parser.Parse(output)
-			for _, p := range parser.Patterns {
-				m := p.ToKicad()
-				var module_file *os.File
-				module_file, err = os.Create(strings.Replace(m.Name, " ", "_", -1) + ".kicad_mod")
-				_, err = module_file.WriteString(m.ToSExp())
-				module_file.Close()
+			ProcessFile(path)
 
-			}
 		}
-
 	} else {
-		output, err := DecodeFile(os.Args[1])
-		if err != nil {
-			log.Fatalln(err)
-		}
-		parser := bxlparser.NewBxlParser()
-		parser.Parse(output)
-		for _, p := range parser.Patterns {
-			m := p.ToKicad()
-			var module_file *os.File
-			module_file, err = os.Create(strings.Replace(m.Name, " ", "_", -1) + ".kicad_mod")
-			_, err = module_file.WriteString(m.ToSExp())
-			module_file.Close()
-
-		}
-
+		ProcessFile(os.Args[1])
 	}
 
+}
+
+func ProcessFile(f string) {
+	output, err := DecodeFile(f)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	parser := bxlparser.NewBxlParser()
+	parser.Parse(output)
+	for _, p := range parser.Patterns {
+		m := p.ToKicad()
+		var module_file *os.File
+		module_file, err = os.Create(strings.Replace(m.Name, " ", "_", -1) + ".kicad_mod")
+		_, err = module_file.WriteString(m.ToSExp())
+		module_file.Close()
+
+	}
 }
