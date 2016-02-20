@@ -121,6 +121,5 @@ func (l XlrLayer) ToKicadLayer() gokicadlib.Layer {
 		fmt.Println(l.String())
 		fmt.Println(err)
 	}
-	//fmt.Println(l.String(), string(kcl))
 	return kcl
 }

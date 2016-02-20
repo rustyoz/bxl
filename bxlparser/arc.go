@@ -1,7 +1,6 @@
 package bxlparser
 
 import (
-	"fmt"
 	"math"
 	"strconv"
 	"strings"
@@ -41,7 +40,6 @@ func FindArcs(harcs HasArcs) {
 				switch f {
 				case "Layer":
 					arc.Layer, _ = XlrLayerString(fields[j+1])
-					fmt.Println(fields[j+1], arc.Layer.String())
 				case "Origin":
 					arc.Origin.FromString(fields[j+1], fields[j+2])
 				case "StartAngle":
@@ -60,18 +58,15 @@ func FindArcs(harcs HasArcs) {
 }
 
 func (a *Arc) ToKicadArc() gokicadlib.Arc {
-	fmt.Println(a)
 	var ka gokicadlib.Arc
 	ka.Angle = a.SweepAngle
 	ka.Start = gokicadlib.Point{MiltoMM(a.Origin.X), MiltoMM(-a.Origin.Y)}
 
 	ka.Layer = a.Layer.ToKicadLayer()
 	v := Vector(MiltoMM(a.Radius), a.StartAngle+a.SweepAngle)
-	fmt.Println("sweep", a.StartAngle+a.SweepAngle)
-	fmt.Println(v)
+
 	ka.End = gokicadlib.Point{MiltoMM(a.Origin.X) + v.X, MiltoMM(-a.Origin.Y) + v.Y}
 	ka.Width = MiltoMM(a.Width)
-	fmt.Println(ka)
 
 	return ka
 }
