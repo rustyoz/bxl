@@ -57,12 +57,16 @@ func FindArcs(harcs HasArcs) {
 	}
 }
 
-func (a *Arc) ToKicadArc() gokicadlib.Arc {
-	var ka gokicadlib.Arc
+func (a *Arc) ToKicadArc() (ka *gokicadlib.Arc) {
+	ka = &gokicadlib.Arc{}
 	ka.Angle = a.SweepAngle
 	ka.Start = gokicadlib.Point{MiltoMM(a.Origin.X), MiltoMM(-a.Origin.Y)}
 
-	ka.Layer = a.Layer.ToKicadLayer()
+	var err error
+	ka.Layer, err = a.Layer.ToKicadLayer()
+	if err != nil {
+		return nil
+	}
 	v := Vector(MiltoMM(a.Radius), a.StartAngle+a.SweepAngle)
 
 	ka.End = gokicadlib.Point{MiltoMM(a.Origin.X) + v.X, MiltoMM(-a.Origin.Y) + v.Y}
@@ -79,7 +83,10 @@ func Vector(radius float64, angle float64) Point {
 func (as ArcSlice) ToKicadArcs() []gokicadlib.Arc {
 	var kcas []gokicadlib.Arc
 	for _, a := range as {
-		kcas = append(kcas, a.ToKicadArc())
+		arc := a.ToKicadArc()
+		if arc != nil {
+			kcas = append(kcas, *arc)
+		}
 	}
 	return kcas
 }

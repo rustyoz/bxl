@@ -44,23 +44,30 @@ func FindLines(hl HasLines) {
 	}
 }
 
-func (l Line) ToKicadLine() gokicadlib.Line {
+func (l Line) ToKicadLine() *gokicadlib.Line {
 	var kcl gokicadlib.Line
-
 	kcl.Origin.X = MiltoMM(l.Origin.X)
 	kcl.Origin.Y = MiltoMM(-l.Origin.Y)
 
 	kcl.End.X = MiltoMM(l.End.X)
 	kcl.End.Y = MiltoMM(-l.End.Y)
-	kcl.Layer = l.Layer.ToKicadLayer()
+
+	layer, e := l.Layer.ToKicadLayer()
+	if e != nil {
+		return nil
+	}
+	kcl.Layer = layer
 	kcl.Width = MiltoMM(l.Width)
-	return kcl
+	return &kcl
 }
 
 func (ls LineSlice) ToKicadLines() []gokicadlib.Line {
 	var kcls []gokicadlib.Line
 	for _, l := range ls {
-		kcls = append(kcls, l.ToKicadLine())
+		line := l.ToKicadLine()
+		if line != nil {
+			kcls = append(kcls, *line)
+		}
 	}
 	return kcls
 }

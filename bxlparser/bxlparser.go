@@ -12,7 +12,7 @@ type BxlParser struct {
 	textStyles []TextStyle
 	Patterns   []Pattern
 	padstacks  []PadStack
-	symbol     Symbol
+	Symbol     Symbol
 	component  Component
 }
 
@@ -32,6 +32,7 @@ func (b *BxlParser) Parse(in string) {
 
 	b.FindPadStacks()
 	b.FindPatterns()
+	b.FindSymbol()
 
 }
 

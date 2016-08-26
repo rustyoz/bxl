@@ -9,6 +9,7 @@ import (
 
 	"github.com/rustyoz/bxl/bxlbin"
 	"github.com/rustyoz/bxl/bxlparser"
+	"github.com/rustyoz/gokicadlib"
 )
 
 func DecodeFile(path string) (string, error) {
@@ -41,9 +42,11 @@ func main() {
 	}
 	if strings.HasPrefix(os.Args[1], "*.") {
 		files, _ := filepath.Glob(os.Args[1])
+		fmt.Println(files)
 		for _, f := range files {
 			fmt.Println(f)
 			path := filepath.Join(wd, f)
+			fmt.Println(path)
 			ProcessFile(path)
 
 		}
@@ -68,4 +71,10 @@ func ProcessFile(f string) {
 		module_file.Close()
 
 	}
+	var schematiclib_file *os.File
+	schematiclib_file, err = os.Create(strings.Replace(parser.Symbol.Name, " ", "_", -1) + ".lib")
+	schematiclib := &gokicadlib.SchematicLibrary{}
+	schematiclib.AddSymbol(*parser.Symbol.Kicad())
+	schematiclib.KicadLib().WriteTo(schematiclib_file)
+	schematiclib_file.Close()
 }

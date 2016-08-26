@@ -74,9 +74,14 @@ func FindText(ht HasText) {
 	}
 }
 
-func (t Text) ToKicadText() (kct gokicadlib.Text) {
+func (t Text) ToKicadText() (kct *gokicadlib.Text) {
+	kct = &gokicadlib.Text{}
 	kct.Text = t.Text
-	kct.Layer = t.Layer.ToKicadLayer()
+	var err error
+	kct.Layer, err = t.Layer.ToKicadLayer()
+	if err != nil {
+		return nil
+	}
 	kct.Visible = true
 
 	kct.Origin.X = MiltoMM(t.Origin.X)
@@ -98,7 +103,10 @@ func (t Text) ToKicadText() (kct gokicadlib.Text) {
 func (ts TextSlice) ToKicadText() []gokicadlib.Text {
 	var kcts []gokicadlib.Text
 	for _, t := range ts {
-		kcts = append(kcts, t.ToKicadText())
+		kt := t.ToKicadText()
+		if kt != nil {
+			kcts = append(kcts, *kt)
+		}
 	}
 	return kcts
 }
