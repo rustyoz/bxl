@@ -35,7 +35,7 @@ func FindArcs(harcs HasArcs) {
 	for _, l := range *harcs.Data() {
 		if strings.HasPrefix(strings.TrimSpace(l), "Arc") {
 			var arc Arc
-			fields := strings.FieldsFunc(l, SplitFields)
+			fields := strings.FieldsFunc(l, feildfuncer())
 			for j, f := range fields {
 				switch f {
 				case "Layer":

@@ -2,10 +2,6 @@ package bxlparser
 
 import "strings"
 
-func SplitFields(c rune) bool {
-	return strings.Contains(" (),", string(c))
-}
-
 type BxlParser struct {
 	input      string
 	rawlines   []string
@@ -74,4 +70,8 @@ func isNumber(b byte) bool {
 
 func isLetter(b byte) bool {
 	return (b > 64 && b < 91) || (b > 96 && b < 123)
+}
+
+func (b *BxlParser) TextStyles() *[]TextStyle {
+	return &b.textStyles
 }

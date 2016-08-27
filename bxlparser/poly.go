@@ -4,7 +4,6 @@ import (
 	"log"
 	"regexp"
 	"strings"
-	"unicode"
 )
 
 type Polygon struct {
@@ -21,14 +20,10 @@ type HasPolygon interface {
 }
 
 func FindPolygon(hp HasPolygon) {
-	f := func(c rune) bool {
-		return !unicode.IsLetter(c) && !unicode.IsNumber(c) && c != '-' && c != '.' && c != '_'
-	}
-
 	for _, l := range *hp.Data() {
 		if strings.HasPrefix(strings.TrimSpace(l), "Poly") {
 			var poly Polygon
-			fields := strings.FieldsFunc(l, SplitFields)
+			fields := strings.FieldsFunc(l, feildfuncer())
 			for j, f := range fields {
 				switch f {
 				case "Layer":
@@ -44,7 +39,7 @@ func FindPolygon(hp HasPolygon) {
 			}
 			tuples := FindTuples(l)
 			for _, tup := range tuples {
-				cords := strings.FieldsFunc(tup, f)
+				cords := strings.FieldsFunc(tup, feildfuncer())
 				var p Point
 				p.FromString(cords[0], cords[1])
 				poly.Points = append(poly.Points, p)

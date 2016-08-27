@@ -26,7 +26,7 @@ func FindLines(hl HasLines) {
 	for _, l := range *hl.Data() {
 		if strings.HasPrefix(strings.TrimSpace(l), "Line") {
 			var line Line
-			fields := strings.FieldsFunc(l, SplitFields)
+			fields := strings.FieldsFunc(l, feildfuncer())
 			for j, f := range fields {
 				switch f {
 				case "Layer":
@@ -44,27 +44,35 @@ func FindLines(hl HasLines) {
 	}
 }
 
-func (l Line) ToKicadLine() *gokicadlib.Line {
+func (l Line) ToKicadLine(convert bool) *gokicadlib.Line {
 	var kcl gokicadlib.Line
-	kcl.Origin.X = MiltoMM(l.Origin.X)
-	kcl.Origin.Y = MiltoMM(-l.Origin.Y)
-
-	kcl.End.X = MiltoMM(l.End.X)
-	kcl.End.Y = MiltoMM(-l.End.Y)
-
 	layer, e := l.Layer.ToKicadLayer()
 	if e != nil {
 		return nil
 	}
 	kcl.Layer = layer
-	kcl.Width = MiltoMM(l.Width)
+	if convert {
+		kcl.Origin.X = MiltoMM(l.Origin.X)
+		kcl.Origin.Y = MiltoMM(-l.Origin.Y)
+		kcl.End.X = MiltoMM(l.End.X)
+		kcl.End.Y = MiltoMM(-l.End.Y)
+		kcl.Width = MiltoMM(l.Width)
+		return &kcl
+	}
+
+	kcl.Origin.X = l.Origin.X
+	kcl.Origin.Y = -l.Origin.Y
+	kcl.End.X = l.End.X
+	kcl.End.Y = -l.End.Y
+	kcl.Width = l.Width
 	return &kcl
+
 }
 
-func (ls LineSlice) ToKicadLines() []gokicadlib.Line {
+func (ls LineSlice) ToKicadLines(convert bool) []gokicadlib.Line {
 	var kcls []gokicadlib.Line
 	for _, l := range ls {
-		line := l.ToKicadLine()
+		line := l.ToKicadLine(convert)
 		if line != nil {
 			kcls = append(kcls, *line)
 		}

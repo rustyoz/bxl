@@ -3,7 +3,6 @@ package bxlparser
 import (
 	"strconv"
 	"strings"
-	"unicode"
 
 	"github.com/rustyoz/gokicadlib"
 )
@@ -73,8 +72,8 @@ func (p *Pattern) Data() *[]string {
 	return &p.data
 }
 
-func (p *Pattern) TextStyles() TextStyleSlice {
-	return p.owner.textStyles
+func (p *Pattern) TextStyles() *[]TextStyle {
+	return &p.owner.textStyles
 }
 
 func (p *Pattern) AddPolygon(poly Polygon) {
@@ -82,14 +81,10 @@ func (p *Pattern) AddPolygon(poly Polygon) {
 }
 
 func (p *Pattern) FindPads() {
-	f := func(c rune) bool {
-		return !unicode.IsLetter(c) && !unicode.IsNumber(c) && c != '-' && c != '.'
-	}
-
 	for _, l := range p.data {
 		if strings.HasPrefix(strings.TrimSpace(l), "Pad") {
 			var pad Pad
-			fields := strings.FieldsFunc(l, f)
+			fields := strings.FieldsFunc(l, feildfuncer())
 			for j, f := range fields {
 				switch f {
 				case "PinName":
@@ -126,9 +121,9 @@ func (p *Pattern) ToKicad() gokicadlib.Module {
 	m.Value.Layer = gokicadlib.F_Fab
 	m.Tags = []string{p.Name}
 	m.Pads = PadSlice(p.Pads).ToKicadPads()
-	m.Lines = LineSlice(p.Lines).ToKicadLines()
+	m.Lines = LineSlice(p.Lines).ToKicadLines(true)
 	m.Arcs = ArcSlice(p.Arcs).ToKicadArcs()
-	m.Text = TextSlice(p.Texts).ToKicadText()
+	m.Text = TextSlice(p.Texts).ToKicadText(true)
 	m.Tstamp.Stamp()
 
 	return m

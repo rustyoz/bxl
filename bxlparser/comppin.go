@@ -3,7 +3,6 @@ package bxlparser
 import (
 	"strconv"
 	"strings"
-	"unicode"
 )
 
 // CompPin BXL Component pin
@@ -39,11 +38,8 @@ func (c *Component) FindCompPins() {
 
 func (c *Component) parseCompPin(l *string) {
 	var p CompPin
-	f := func(c rune) bool {
-		return !unicode.IsLetter(c) && !unicode.IsNumber(c) || c == '(' || c == ')' || c == '"'
-	}
 
-	fields := strings.FieldsFunc(*l, f)
+	fields := strings.FieldsFunc(*l, feildfuncer())
 	for i, s := range fields {
 		switch s {
 		case "CompPin":
@@ -83,12 +79,8 @@ func (c *Component) FindPinMap() {
 		}
 	}
 
-	f := func(c rune) bool {
-		return !unicode.IsLetter(c) && !unicode.IsNumber(c) || c == '(' || c == ')' || c == '"'
-	}
-
 	for _, l := range c.data[a:b] {
-		fields := strings.FieldsFunc(l, f)
+		fields := strings.FieldsFunc(l, feildfuncer())
 		padnum, _ := strconv.Atoi(fields[1])
 		c.PinMap[padnum], _ = strconv.Atoi(fields[3])
 	}

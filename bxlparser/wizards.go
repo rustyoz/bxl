@@ -1,9 +1,6 @@
 package bxlparser
 
-import (
-	"strings"
-	"unicode"
-)
+import "strings"
 
 type Wizard struct {
 	VarName string
@@ -18,14 +15,11 @@ type HasWizards interface {
 }
 
 func (b *BxlParser) FindWizards(hw HasWizards) {
-	f := func(c rune) bool {
-		return !unicode.IsLetter(c) && !unicode.IsNumber(c) && c != '-' && c != '.'
-	}
 
 	for _, l := range *hw.Data() {
 		if strings.HasPrefix(strings.TrimSpace(l), "Line") {
 			var w Wizard
-			fields := strings.FieldsFunc(l, f)
+			fields := strings.FieldsFunc(l, feildfuncer())
 			for j, f := range fields {
 				switch f {
 				case "Origin":

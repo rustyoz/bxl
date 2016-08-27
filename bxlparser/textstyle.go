@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"unicode"
 )
 
 type TextStyle struct {
@@ -18,14 +17,11 @@ type TextStyle struct {
 type TextStyleSlice []TextStyle
 
 func (b *BxlParser) FindTextStyles() {
-	f := func(c rune) bool {
-		return !unicode.IsLetter(c) && !unicode.IsNumber(c)
-	}
 
 	for _, l := range b.rawlines {
 		if strings.HasPrefix(strings.TrimSpace(l), "TextStyle") {
 			var ts TextStyle
-			ts.feilds = strings.FieldsFunc(l, f)
+			ts.feilds = strings.FieldsFunc(l, feildfuncer())
 			ts.style = strings.ToLower(ts.feilds[1])
 			for j, f := range ts.feilds {
 				switch f {
