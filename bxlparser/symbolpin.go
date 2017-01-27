@@ -1,6 +1,7 @@
 package bxlparser
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -95,8 +96,9 @@ func (p *SymbolPin) parseSymbolPinName(l string) {
 	text := &p.PinName
 	text.owner = p.Owner.Owner
 
-	fields := strings.FieldsFunc(l, feildfuncer())
-
+	fields := Feilds(l)
+	fmt.Println(l)
+	fmt.Println(fields)
 	for j, f := range fields {
 		switch f {
 		case "Layer":

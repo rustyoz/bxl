@@ -1,6 +1,9 @@
 package bxlparser
 
-import "strings"
+import (
+	"strings"
+	"unicode"
+)
 
 func feildfuncer() func(c rune) bool {
 	quoted := false
@@ -20,4 +23,32 @@ func feildfuncer() func(c rune) bool {
 		return strings.Contains(" (),", string(c))
 	}
 	return f
+}
+
+func Feilds(s string) []string {
+	var fs []string
+	var quote bool
+	var a string
+	for _, c := range s {
+		if quote == false && s == "\"" {
+			quote = true
+			continue
+		}
+		if quote == true && s == "\"" {
+			fs = append(fs, a)
+			a = ""
+		}
+		if quote == false {
+			switch {
+			case strings.ContainsAny(string(c), " (),"):
+				fs = append(fs, a)
+				a = ""
+				continue
+			case unicode.IsLetter(c), unicode.IsDigit(c):
+				a = a + string(c)
+
+			}
+		}
+	}
+	return fs
 }
