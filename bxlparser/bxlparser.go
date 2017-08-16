@@ -8,7 +8,7 @@ type BxlParser struct {
 	textStyles []TextStyle
 	Patterns   []Pattern
 	padstacks  []PadStack
-	Symbol     Symbol
+	Symbols    []Symbol
 	component  Component
 }
 
@@ -28,7 +28,7 @@ func (b *BxlParser) Parse(in string) {
 
 	b.FindPadStacks()
 	b.FindPatterns()
-	b.FindSymbol()
+	b.FindSymbols()
 
 }
 
@@ -47,18 +47,20 @@ func StyleToElements(s string) []string {
 	var r []string
 	var currentnumber string
 
-	for i, c := range []byte(s) {
+	for _, c := range []byte(s) {
 
 		if isLetter(c) { // if it is a letter directly append to output
-			r = append(r, string(c))
-		} else if isNumber(c) { //
-			if !isNumber(s[i+1]) {
-				r = append(r, currentnumber+string(c))
+			if currentnumber != "" {
+				r = append(r, currentnumber)
 				currentnumber = ""
-			} else {
-				currentnumber = currentnumber + string(c)
 			}
+			r = append(r, string(c))
+		} else if isNumber(c) {
+			currentnumber = currentnumber + string(c)
 		}
+	}
+	if currentnumber != "" {
+		r = append(r, currentnumber)
 	}
 
 	return r

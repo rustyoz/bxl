@@ -1,7 +1,6 @@
 package bxlparser
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -39,7 +38,8 @@ func (s *Symbol) FindPins() {
 func (s *Symbol) parseSymbolPin(lines []string) {
 	var p SymbolPin
 
-	fields := strings.FieldsFunc(lines[0], feildfuncer())
+	fields := Fields(lines[0])
+
 	for i, s := range fields {
 		switch s {
 		case "PinNum":
@@ -68,7 +68,7 @@ func (p *SymbolPin) parseSymbolPinDes(l string) {
 	text := &p.PinDes
 	text.owner = p.Owner.Owner
 
-	fields := strings.FieldsFunc(l, feildfuncer())
+	fields := Fields(l)
 
 	for j, f := range fields {
 		switch f {
@@ -96,9 +96,8 @@ func (p *SymbolPin) parseSymbolPinName(l string) {
 	text := &p.PinName
 	text.owner = p.Owner.Owner
 
-	fields := Feilds(l)
-	fmt.Println(l)
-	fmt.Println(fields)
+	fields := Fields(l)
+
 	for j, f := range fields {
 		switch f {
 		case "Layer":
@@ -125,10 +124,28 @@ func (p *SymbolPin) parseSymbolPinName(l string) {
 func (bs SymbolPin) Kicad() *gokicadlib.Pin {
 	p := &gokicadlib.Pin{}
 	p.PinName = bs.Name
+	if len(p.PinName) == 0 {
+		p.PinName = bs.PinDes.Text
+	}
 	p.Number = bs.Number
 	p.Type = gokicadlib.Input
+	for _, cp := range bs.Owner.Owner.component.CompPins {
+		if cp.Number == bs.Number && cp.Name == bs.Name {
+			switch cp.PinType {
+			case "Input":
+				p.Type = gokicadlib.Input
+			case "Power":
+				p.Type = gokicadlib.PowerInput
+			case "Any":
+				p.Type = gokicadlib.Passive
+			case "Output":
+				p.Type = gokicadlib.Output
+			}
+		}
+	}
+
 	p.Shape = gokicadlib.Normal
-	p.Origin = gokicadlib.Point{bs.Origin.X, -bs.Origin.Y}
+	p.Origin = gokicadlib.Point{bs.Origin.X, bs.Origin.Y, 0}
 	p.Length = float64(bs.Length)
 	p.Sizename = bs.PinName.width
 	p.Sizenum = bs.PinDes.width

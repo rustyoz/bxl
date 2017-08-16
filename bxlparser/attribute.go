@@ -1,30 +1,31 @@
 package bxlparser
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
+
+type HasAttributes interface {
+	AddAttribute(a Attribute)
+	Data() *[]string
+	GetOwner() *BxlParser
+}
+
+type AttributeSlice []Attribute
 
 type Attribute struct {
 	Text
 	Attr [2]string
 }
 
-func (s *Symbol) FindAttributes() {
-	for i, l := range s.data {
+func FindAttributes(ha HasAttributes) {
+	for _, l := range *ha.Data() {
 		if strings.HasPrefix(l, "Attribute") {
 			var a Attribute
 
-			a.owner = s.Owner
-			a.parseAttribute(s.data[i])
-			switch a.Attr[0] {
-			case "RefDes":
-				s.Reference = a
-			case "Value":
-				s.Value = a
-			case "Type":
-				s.Type = a
-			default:
-				s.Attributes = append(s.Attributes, a)
-
-			}
+			a.owner = ha.GetOwner()
+			a.parseAttribute(l)
+			ha.AddAttribute(a)
 		}
 	}
 }
@@ -32,13 +33,22 @@ func (s *Symbol) FindAttributes() {
 func (a *Attribute) parseAttribute(l string) {
 	fields := strings.FieldsFunc(l, feildfuncer())
 	a.Text.parseText(l)
+	fmt.Println(l)
 	for j, f := range fields {
 		switch f {
 		case "Attr":
 			a.Attr[0] = fields[j+1]
 			a.Attr[1] = fields[j+2]
-
 		}
 	}
+	fmt.Println(a.Origin)
+}
 
+func (ats AttributeSlice) Contains(name string) (*Attribute, error) {
+	for _, a := range ats {
+		if a.Attr[0] == name {
+			return &a, nil
+		}
+	}
+	return nil, fmt.Errorf("Attribute not found: %v", name)
 }

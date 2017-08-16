@@ -1,7 +1,7 @@
 package bxlparser
 
 import (
-	"strconv"
+	"fmt"
 
 	"github.com/rustyoz/gokicadlib"
 )
@@ -14,61 +14,72 @@ type Pad struct {
 	Style          string
 	OriginalStyle  string
 	OriginalNumber int
+	Rotate         int
+	owner          *BxlParser
 }
 
 type PadSlice []Pad
 
-func (p *Pad) ToKicadPad() gokicadlib.Pad {
+func (p *Pad) ToKicadPad() (gokicadlib.Pad, error) {
 	var kkp gokicadlib.Pad
 	kkp.Number = p.Number
 	kkp.PinName = p.PinName
 
 	kkp.Origin.X = MiltoMM(p.Origin.X)
 	kkp.Origin.Y = MiltoMM(-p.Origin.Y)
-	styleelements := StyleToElements(p.Style)
-	for i, e := range styleelements {
-		switch e {
-		case "x", "X":
-			xs, _ := strconv.Atoi(styleelements[i+1])
-			kkp.Size.X = MiltoMM(float64(xs))
-		case "y", "Y":
-			xs, _ := strconv.Atoi(styleelements[i+1])
-			kkp.Size.Y = MiltoMM(float64(xs))
-		case "d", "D":
-			ds, _ := strconv.Atoi(styleelements[i+1])
-			kkp.Drillsize = MiltoMM(float64(ds))
-		}
+	kkp.Origin.R = p.Rotate
+
+	padstack, err := PadStackSlice(p.owner.padstacks).Contains(p.Style)
+	if err != nil {
+		return kkp, fmt.Errorf("Error: ToKicadPad %v  %v", p, err)
 	}
 
-	for _, e := range styleelements {
-		switch e {
-		case "r", "R":
-			kkp.Shape = gokicadlib.Rectangle
-		case "s", "S":
-			kkp.Shape = gokicadlib.Rectangle
-		case "e", "E":
-			if kkp.Size.X == kkp.Size.Y {
-				kkp.Shape = gokicadlib.Circle
+	// find padshape for top layer
+	for _, ps := range padstack.PadShapes {
+		if ps.Layer == TOP {
+			kkp.Layers = gokicadlib.LayerSlice{gokicadlib.F_Cu, gokicadlib.F_Paste, gokicadlib.F_Mask}
+			// padsize
+			kkp.Size.X = MiltoMM(ps.Width)
+			kkp.Size.Y = MiltoMM(ps.Height)
+
+			// pad stype
+			if padstack.Surface {
+				kkp.Padtype = gokicadlib.Surface
+				kkp.Layers = gokicadlib.LayerSlice{gokicadlib.F_Cu, gokicadlib.F_Paste, gokicadlib.F_Mask}
 			} else {
+				kkp.Drillsize = MiltoMM(float64(padstack.HoleDiam))
+				if padstack.Plated {
+					kkp.Padtype = gokicadlib.ThroughHole
+					kkp.Layers = gokicadlib.LayerSlice{gokicadlib.A_Cu, gokicadlib.A_Mask}
+				} else {
+					kkp.Padtype = gokicadlib.NotPlatedThroughHole
+				}
+			}
+
+			// kicad pad shape from PadShape Description
+			switch ps.Description {
+			case "Rectangle":
+				kkp.Shape = gokicadlib.Rectangle
+			case "Round":
+				kkp.Shape = gokicadlib.Circle
+			case "Oblong":
 				kkp.Shape = gokicadlib.Oval
 			}
-		case "p", "P":
-			kkp.Padtype = gokicadlib.ThroughHole
-			kkp.Layers = []gokicadlib.Layer{gokicadlib.A_Cu, gokicadlib.A_Mask, gokicadlib.F_SilkS}
-		case "t", "T":
-			kkp.Padtype = gokicadlib.Surface
-			kkp.Layers = []gokicadlib.Layer{gokicadlib.F_Cu, gokicadlib.F_Paste, gokicadlib.F_Mask}
 		}
 	}
 
-	return kkp
+	return kkp, nil
 
 }
 
-func (ps PadSlice) ToKicadPads() []gokicadlib.Pad {
+func (ps PadSlice) ToKicadPads() ([]gokicadlib.Pad, error) {
 	var kkps []gokicadlib.Pad
 	for _, p := range ps {
-		kkps = append(kkps, p.ToKicadPad())
+		nkkp, err := p.ToKicadPad()
+		if err != nil {
+			return kkps, fmt.Errorf("PadSlice.ToKicadPads error: %v", err)
+		}
+		kkps = append(kkps, nkkp)
 	}
-	return kkps
+	return kkps, nil
 }

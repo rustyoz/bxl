@@ -174,12 +174,10 @@ func (d *Decoder) Decode(input io.Reader) (string, error) {
 	var output bytes.Buffer
 
 	d.source_index = 4
-	fmt.Println("input bytes: ", len(d.source_buffer))
 
 	var outchar int
 	outchar = uncompressed_size(d.source_buffer[0:4])
-	fmt.Println("Expected Characters", outchar)
-	for outchar != 0 {
+	for d.source_index < (len(d.source_buffer) - 1) {
 		var bits int
 		var node = d.root
 		for !node.isLeaf() {

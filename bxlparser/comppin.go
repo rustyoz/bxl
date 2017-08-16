@@ -65,6 +65,7 @@ func (c *Component) parseCompPin(l *string) {
 			p.OuterGraphic = fields[i+1]
 		}
 	}
+	c.CompPins = append(c.CompPins, p)
 }
 
 // FindPinMap Find Pin map

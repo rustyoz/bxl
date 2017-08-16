@@ -21,8 +21,8 @@ type Arc struct {
 type ArcSlice []Arc
 
 func (arc *Arc) CalculateEndPoint() {
-	vector := Point{arc.Radius * math.Cos(arc.StartAngle*180/math.Pi), arc.Radius * math.Sin(arc.StartAngle*180/math.Pi)}
-	arc.End = Point{arc.Origin.X + vector.X, arc.Origin.Y + vector.Y}
+	vector := Point{arc.Radius * math.Cos(arc.StartAngle*180/math.Pi), arc.Radius * math.Sin(arc.StartAngle*180/math.Pi), 0}
+	arc.End = Point{arc.Origin.X + vector.X, arc.Origin.Y + vector.Y, 0}
 }
 
 type HasArcs interface {
@@ -60,7 +60,7 @@ func FindArcs(harcs HasArcs) {
 func (a *Arc) ToKicadArc() (ka *gokicadlib.Arc) {
 	ka = &gokicadlib.Arc{}
 	ka.Angle = a.SweepAngle
-	ka.Start = gokicadlib.Point{MiltoMM(a.Origin.X), MiltoMM(-a.Origin.Y)}
+	ka.Start = gokicadlib.Point{MiltoMM(a.Origin.X), MiltoMM(-a.Origin.Y), 0}
 
 	var err error
 	ka.Layer, err = a.Layer.ToKicadLayer()
@@ -69,14 +69,14 @@ func (a *Arc) ToKicadArc() (ka *gokicadlib.Arc) {
 	}
 	v := Vector(MiltoMM(a.Radius), a.StartAngle+a.SweepAngle)
 
-	ka.End = gokicadlib.Point{MiltoMM(a.Origin.X) + v.X, MiltoMM(-a.Origin.Y) + v.Y}
+	ka.End = gokicadlib.Point{MiltoMM(a.Origin.X) + v.X, MiltoMM(-a.Origin.Y) + v.Y, 0}
 	ka.Width = MiltoMM(a.Width)
 
 	return ka
 }
 
 func Vector(radius float64, angle float64) Point {
-	vector := Point{radius * math.Cos(angle*math.Pi/180.0), radius * math.Sin(angle*math.Pi/180.0)}
+	vector := Point{radius * math.Cos(angle*math.Pi/180.0), radius * math.Sin(angle*math.Pi/180.0), 0}
 	return vector
 }
 

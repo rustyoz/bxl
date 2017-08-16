@@ -2,6 +2,7 @@ package bxlparser
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/rustyoz/gokicadlib"
 )
@@ -184,13 +185,12 @@ func (l XlrLayer) ToKicadLayer() (gokicadlib.Layer, error) {
 
 	kcl, err := layermap[l.String()]
 	if err != true {
-		fmt.Println(l.String())
-		fmt.Println(err)
+		log.Fatal(l.String(), err)
 	}
 	if xlrlayerFilter(l) {
 		return kcl, nil
 	}
-	e := fmt.Errorf("excluded layer")
+	e := fmt.Errorf("excluded layer %v", l)
 	return gokicadlib.Exclude, e
 }
 

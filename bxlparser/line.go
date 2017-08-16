@@ -39,6 +39,7 @@ func FindLines(hl HasLines) {
 					line.Width, _ = strconv.ParseFloat(fields[j+1], 64)
 				}
 			}
+
 			hl.AddLine(line)
 		}
 	}

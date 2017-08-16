@@ -18,6 +18,7 @@ type Text struct {
 	Justification string
 	Style         string
 	width         float64
+	data          string
 }
 
 // HasText ...
@@ -45,7 +46,6 @@ func FindText(ht HasText) {
 }
 
 func (t *Text) parseText(l string) {
-
 	fields := strings.FieldsFunc(l, feildfuncer())
 
 	for j, f := range fields {
@@ -66,29 +66,29 @@ func (t *Text) parseText(l string) {
 	}
 }
 
-func (t Text) ToKicadText(convert bool) (kct *gokicadlib.Text) {
-	kct = &gokicadlib.Text{}
+func (t Text) ToKicadText(mm bool) (*gokicadlib.Text, error) {
+	kct := &gokicadlib.Text{}
 	kct.Text = t.Text
 	var err error
-	kct.Layer, err = t.Layer.ToKicadLayer()
-	if err != nil {
-		return nil
-	}
+
 	kct.Visible = true
 
+	if t.owner == nil {
+		return nil, fmt.Errorf("no owner of text")
+	}
 	tss := t.owner.TextStyles()
 	ts, err := TextStyleSlice(*tss).Contains(t.Style)
 	if err != nil {
-		fmt.Println(t, err)
+		return nil, fmt.Errorf("error converting to kicad text  %v", err)
 	}
 
-	if convert {
+	if mm {
 		kct.Origin.X = MiltoMM(t.Origin.X)
 		kct.Origin.Y = MiltoMM(-t.Origin.Y)
 		kct.Font.Size.X = MiltoMM(float64(ts.fontHeight))
 		kct.Font.Size.Y = MiltoMM(float64(ts.fontCharWidth))
 		kct.Font.Thickness = float32(MiltoMM(float64(ts.fontWidth)))
-		return kct
+		return kct, nil
 	}
 
 	kct.Origin.X = t.Origin.X
@@ -97,17 +97,30 @@ func (t Text) ToKicadText(convert bool) (kct *gokicadlib.Text) {
 	kct.Font.Size.Y = float64(ts.fontCharWidth)
 	kct.Font.Thickness = float32(float64(ts.fontWidth))
 
-	return kct
+	kct.Layer, err = t.Layer.ToKicadLayer()
+	if err != nil {
+		if !strings.HasPrefix(err.Error(), "ex") {
+			return kct, err
+		}
+	}
+	return kct, nil
 
 }
 
-func (ts TextSlice) ToKicadText(convert bool) []gokicadlib.Text {
+func (ts TextSlice) ToKicadText(mm bool) ([]gokicadlib.Text, error) {
 	var kcts []gokicadlib.Text
 	for _, t := range ts {
-		kt := t.ToKicadText(convert)
-		if kt != nil {
+		kt, err := t.ToKicadText(mm)
+		if kt != nil && err != nil {
 			kcts = append(kcts, *kt)
 		}
+		if err != nil {
+			if !strings.HasPrefix(err.Error(), "ex") {
+				return kcts, err
+			}
+			fmt.Println(err)
+		}
+
 	}
-	return kcts
+	return kcts, nil
 }

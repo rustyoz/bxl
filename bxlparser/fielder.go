@@ -25,7 +25,7 @@ func feildfuncer() func(c rune) bool {
 	return f
 }
 
-func Feilds(s string) []string {
+func Fields(s string) []string {
 	var fs []string
 	var quote bool
 	var a string
@@ -41,10 +41,12 @@ func Feilds(s string) []string {
 		if quote == false {
 			switch {
 			case strings.ContainsAny(string(c), " (),"):
-				fs = append(fs, a)
+				if len(a) > 0 {
+					fs = append(fs, a)
+				}
 				a = ""
 				continue
-			case unicode.IsLetter(c), unicode.IsDigit(c):
+			case unicode.IsLetter(c), unicode.IsDigit(c), c == '-':
 				a = a + string(c)
 
 			}

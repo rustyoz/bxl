@@ -26,6 +26,7 @@ type Component struct {
 	Compdata        string
 	AttachedSymbols []Symbol
 	PinMap          map[int]int // Padnum to ComponentPin
+	Attributes      []Attribute
 }
 
 // FindComponents Find components
@@ -40,6 +41,7 @@ func (b *BxlParser) FindComponents() {
 				if strings.HasPrefix(b.rawlines[j], "EndComponent") {
 					c.data = b.rawlines[i+1 : j]
 					c.FindCompPins()
+					FindAttributes(&c)
 					i = j
 					b.component = c
 					break
@@ -87,4 +89,15 @@ func (c *Component) ParseDescription() {
 			}
 		}
 	}
+}
+
+func (c *Component) AddAttribute(a Attribute) {
+	c.Attributes = append(c.Attributes, a)
+}
+func (c *Component) GetOwner() *BxlParser {
+	return c.owner
+}
+
+func (c *Component) Data() *[]string {
+	return &c.data
 }

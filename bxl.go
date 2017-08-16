@@ -1,80 +1,73 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
+	"runtime"
+	"runtime/pprof"
+	"sync"
 
-	"github.com/rustyoz/bxl/bxlbin"
-	"github.com/rustyoz/bxl/bxlparser"
 	"github.com/rustyoz/gokicadlib"
 )
 
-func DecodeFile(path string) (string, error) {
-	infile, err := os.Open(path)
-	if err != nil {
-		log.Fatal("Error opening file: ", path, err)
-	}
-	os.Create(path + ".txt")
-
-	decoder := bxlbin.NewDecoder()
-	output, decodeerr := decoder.Decode(infile)
-	var outfile *os.File
-	outfile, err = os.Create(path + ".txt")
-	_, err = outfile.WriteString(output)
-
-	if err != nil {
-		log.Println("Error writing file: ", path+".txt", err)
-	}
-	fmt.Println("Output characters: ", len(output))
-	outfile.Close()
-	return output, decodeerr
-}
-
 func main() {
+	var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
+
 	wd, _ := os.Getwd()
 	fmt.Println(wd)
-	if len(os.Args) < 2 {
-		fmt.Println("Usage: bxl filename.bxl or bxl *.bxl")
+	schemlibname := flag.String("lib", "", "schematic symbol library name")
+	rawbxl := flag.Bool("rawbxl", false, "output raw ascii of bxl file")
+	flag.Parse()
+	if *cpuprofile != "" {
+		fmt.Println("Starting CPU Profile")
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	}
+
+	if len(flag.Args()) < 1 {
+		flag.PrintDefaults()
 		return
 	}
-	if strings.HasPrefix(os.Args[1], "*.") {
-		files, _ := filepath.Glob(os.Args[1])
-		fmt.Println(files)
+	files, _ := filepath.Glob(flag.Arg(0))
+	var slib gokicadlib.SchematicLibrary
+	symbolchan := make(chan *gokicadlib.Symbol)
+	filechan := make(chan string)
+	wg := sync.WaitGroup{}
+	for i := 0; i < runtime.NumCPU(); i++ {
+		wg.Add(1)
+		go ProcessFiles(filechan, *rawbxl, symbolchan, &wg)
+	}
+	go func() {
 		for _, f := range files {
-			fmt.Println(f)
 			path := filepath.Join(wd, f)
-			fmt.Println(path)
-			ProcessFile(path)
-
+			filechan <- path
 		}
-	} else {
-		ProcessFile(os.Args[1])
+		close(filechan)
+		wg.Wait()
+		close(symbolchan)
+	}()
+	for {
+		s, ok := <-symbolchan
+		if ok {
+			slib.AddSymbol(*s)
+
+		} else {
+			break
+		}
 	}
 
-}
-
-func ProcessFile(f string) {
-	output, err := DecodeFile(f)
+	slibfile, err := os.Create(*schemlibname + ".lib")
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal(err)
 	}
-	parser := bxlparser.NewBxlParser()
-	parser.Parse(output)
-	for _, p := range parser.Patterns {
-		m := p.ToKicad()
-		var module_file *os.File
-		module_file, err = os.Create(strings.Replace(m.Name, " ", "_", -1) + ".kicad_mod")
-		_, err = module_file.WriteString(m.ToSExp())
-		module_file.Close()
+	slibfile.WriteString(slib.KicadLib().String())
+	slibfile.Close()
 
-	}
-	var schematiclib_file *os.File
-	schematiclib_file, err = os.Create(strings.Replace(parser.Symbol.Name, " ", "_", -1) + ".lib")
-	schematiclib := &gokicadlib.SchematicLibrary{}
-	schematiclib.AddSymbol(*parser.Symbol.Kicad())
-	schematiclib.KicadLib().WriteTo(schematiclib_file)
-	schematiclib_file.Close()
 }
