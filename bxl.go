@@ -18,7 +18,7 @@ func main() {
 
 	wd, _ := os.Getwd()
 	fmt.Println(wd)
-	schemlibname := flag.String("lib", "", "schematic symbol library name")
+	schemlibname := flag.String("lib", "symbols", "schematic symbol library name")
 	rawbxl := flag.Bool("rawbxl", false, "output raw ascii of bxl file")
 	flag.Parse()
 	if *cpuprofile != "" {
